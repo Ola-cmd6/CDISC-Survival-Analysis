@@ -10,4 +10,4 @@ This repository contains an R Markdown report analyzing clinical trial data from
 
 ## 📂 Files
 *   **[CDISC Pilot Study.Rmd](CDISC Pilot Study.Rmd)**: The R Markdown source code.
-*   **[Click here to view the live HTML report!](CDISC-Pilot-Study.html)**: The rendered final report.
+* **[Click here to view the live HTML report!](https://ola-cmd6.github.io/CDISC-Survival-Analysis/CDISC-Pilot-Study.html)**
