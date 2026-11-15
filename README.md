@@ -9,5 +9,5 @@ This repository contains an R Markdown report analyzing clinical trial data from
 *   **Reporting:** Reproducible research using R Markdown to combine code, visualizations, and clinical interpretation.
 
 ## 📂 Files
-*   `[CDISC Pilot Study].Rmd`: The R Markdown source code.
-*   `[CDISC Pilot Study].html`: The rendered final report (Click to view).
+*   **[CDISC Pilot Study.Rmd](CDISC Pilot Study.Rmd)**: The R Markdown source code.
+*   **[Click here to view the live HTML report!](CDISC-Pilot-Study.html)**: The rendered final report.
