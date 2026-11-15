@@ -1,0 +1,74 @@
+---
+title: 'CDISC Pilot Study: Survival Analysis of Time to Deterioration'
+author: "Olaoluwa David Odeyemi"
+date: "2026-11-15"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(dplyr)
+library(survival)
+library(survminer)
+library(clinTrialData)
+```
+
+## 1. Introduction
+
+This report analyzes the CDISC Pilot Study data to evaluate the Time to Deterioration Event (TTDE) across treatment groups. The objective of this analysis is to assess the comparative risk of clinical deterioration between patients receiving the active study drug (Xanomeline) at varying doses and those receiving a placebo. 
+
+Using the ADaM (Analysis Data Model) datasets, we apply Kaplan-Meier survival estimators and Cox Proportional Hazards modeling to quantify the treatment effect and visualize survival probabilities over time.
+
+## 2. Data Preparation
+
+```{r}
+# Connect to data
+db <- connect_clinical_data("cdisc_pilot")
+
+# Read datasets
+adsl <- db$adam$read_cnt("adsl")
+adtte <- db$adam$read_cnt("adtte")
+
+# Clean ADSL (convert blanks to NA and filter)
+adsl_clean <- adsl %>%
+  mutate(across(where(is.character), ~ na_if(., ""))) %>%
+  filter(SAFFL == "Y")
+
+# Filter ADTTE and merge with ADSL
+adtte_survival <- adtte %>%
+  filter(PARAMCD == "TTDE") %>%
+  filter(!is.na(AVAL) & !is.na(CNSR)) %>%
+  left_join(adsl_clean, by = "USUBJID")
+```
+
+##3 Kaplan-Meier Survival Analysis
+
+```{r}
+km_fit <- survfit(Surv(AVAL, 1 - CNSR) ~ TRT01A, data = adtte_survival)
+
+ggsurvplot(
+  km_fit, 
+  data = adtte_survival, 
+  pval = TRUE,             
+  risk.table = TRUE,       
+  conf.int = TRUE,         
+  title = "Time to Deterioration Event (TTDE) by Treatment Group",
+  xlab = "Time (Days)", 
+  ylab = "Survival Probability"
+)
+```
+
+## Interpretation of Kaplan-Meier
+
+The Kaplan-Meier plot shows a significant difference in survival probabilities between the treatment groups (Log-rank test p < 0.0001). The Placebo group maintained a higher probability of remaining event-free compared to both the High and Low Dose Xanomeline groups, which experienced rapid declines in survival probability early in the study.
+
+## 4. Cox Proportional Hazards Model
+
+```{r}
+cox_model <- coxph(Surv(AVAL, 1 - CNSR) ~ TRT01A, data = adtte_survival)
+summary(cox_model)
+```
+
+## Interpretation of Cox Model
+
+The Cox Proportional Hazards model confirms the findings from the Kaplan-Meier plot. Using the Placebo group as the reference, the Hazard Ratio (HR) for the Xanomeline High Dose group was 5.03 (95% CI: 3.18 - 7.94, p < 0.001). This indicates that patients on the high dose had approximately 5 times the risk of clinical deterioration at any given time compared to the placebo. The Low Dose group also showed a significantly increased risk (HR: 4.15, p < 0.001).
+
